@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center_horizontal">
+
+        <!-- Memory Info -->
+        <TextView
+            android:id="@+id/memoryText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Memory Info"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_background" />
+
+        <!-- CPU Info -->
+        <TextView
+            android:id="@+id/cpuText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CPU Info"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_background" />
+
+        <!-- Storage Info -->
+        <TextView
+            android:id="@+id/storageText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Storage Info"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_background" />
+
+        <!-- Battery Info -->
+        <TextView
+            android:id="@+id/batteryText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Battery Info"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_background" />
+
+        <!-- Lifecycle Info -->
+        <TextView
+            android:id="@+id/lifecycleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lifecycle Status"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_background" />
+
+        <!-- Uptime Info -->
+        <TextView
+            android:id="@+id/uptimeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Uptime Info"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_background" />
+
+        <!-- App Usage Stats -->
+        <TextView
+            android:id="@+id/usageStatsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="App Usage Stats"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_background" />
+
+        <TextView
+            android:id="@+id/usageText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="App Usage Info"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:padding="8dp" />
+
+
+    </LinearLayout>
+</ScrollView>
