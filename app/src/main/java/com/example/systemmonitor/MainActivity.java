@@ -1,299 +1,268 @@
 package com.example.systemmonitor;
 
-import android.Manifest;
-import android.app.ActivityManager;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
-import android.content.BroadcastReceiver;
+import android.net.TrafficStats;
+import android.os.Handler;
+import android.os.Bundle;
+import android.os.Build;
 import android.content.Context;
+import android.app.ActivityManager;
+import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.BatteryManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
 import android.os.StatFs;
-import android.os.SystemClock;
-import android.provider.Settings;
-import android.text.TextUtils;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.os.Environment;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.lifecycle.ProcessLifecycleOwner;
-
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.List;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView memoryText, cpuText, storageText, batteryText, lifecycleTextView, uptimeText, usageText;
-    private static final int REQUEST_CODE = 1;
-    private Handler handler = new Handler();
+    private TextView rotatingHeader, totalMemoryText, availableMemoryText, totalStorageText, availableStorageText, batteryPercentageText, batteryHealthText, batteryCapacityText, batteryTemperatureText;
+    private ProgressBar memoryProgressBar, batteryProgressBar, storageProgressBar;
+    private int rotationCount = 0;
 
-    private final BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-            int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-            int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-            int health = intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1);
-            int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+    private TextView uploadSpeedText, downloadSpeedText;
+    private long previousRxBytes = 0;
+    private long previousTxBytes = 0;
+    private Handler networkHandler = new Handler();
 
-            float batteryPct = level * 100 / (float) scale;
-
-            String statusString = getBatteryStatusString(status);
-            String healthString = getBatteryHealthString(health);
-            String powerSource = getBatteryPowerSourceString(plugged);
-
-            batteryText.setText(String.format("Battery: %.2f%%\nStatus: %s\nHealth: %s\nPower Source: %s",
-                    batteryPct, statusString, healthString, powerSource));
-        }
-    };
+    private String[] rotatingMessages = {"Hi, %s", "Processor: %s", "Operating System: %s"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        memoryText = findViewById(R.id.memoryText);
-        cpuText = findViewById(R.id.cpuText);
-        storageText = findViewById(R.id.storageText);
-        batteryText = findViewById(R.id.batteryText);
-        lifecycleTextView = findViewById(R.id.lifecycleTextView);
-        uptimeText = findViewById(R.id.uptimeText);
-        usageText = findViewById(R.id.usageText);
+        // Initialize Views
+        rotatingHeader = findViewById(R.id.rotating_header);
+        totalMemoryText = findViewById(R.id.text_total_memory);
+        availableMemoryText = findViewById(R.id.text_available_memory);
+        memoryProgressBar = findViewById(R.id.progress_memory);
+        totalStorageText = findViewById(R.id.text_total_storage);
+        availableStorageText = findViewById(R.id.text_available_storage);
+        storageProgressBar = findViewById(R.id.progress_storage);
+        batteryPercentageText = findViewById(R.id.battery_percentage);
+        batteryProgressBar = findViewById(R.id.battery_progress);
+        batteryHealthText = findViewById(R.id.battery_health);
+        batteryCapacityText = findViewById(R.id.battery_capacity);
+        batteryTemperatureText = findViewById(R.id.battery_temperature);
+        uploadSpeedText = findViewById(R.id.text_upload_speed);
+        downloadSpeedText = findViewById(R.id.text_download_speed);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+        // Start updating stats in real-time
+        updateRotatingHeader();
+        updateMemoryStats();
+        updateStorageStats();
+        updateBatteryStats();
+        startNetworkSpeedMonitoring();
+
+        // Update memory and storage stats every 2 seconds
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                updateMemoryStats();
+                updateStorageStats();
+                new Handler().postDelayed(this, 2000);
             }
-        }
+        }, 2000);
 
-        if (!isUsagePermissionGranted()) {
-            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-            startActivity(intent);
-        }
-
-        registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-        ProcessLifecycleOwner.get().getLifecycle().addObserver(new AppLifecycleObserver(lifecycleTextView));
-
-        handler.postDelayed(updateRunnable, 2000);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(batteryReceiver);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(batteryReceiver);
-    }
-
-    private Runnable updateRunnable = new Runnable() {
-        @Override
-        public void run() {
-            memoryText.setText(getMemoryInfo());
-            cpuText.setText(getCpuUsage());
-            storageText.setText(getStorageInfo());
-            uptimeText.setText(getDeviceUptime());
-            usageText.setText(getTopUsedApps());
-            handler.postDelayed(this, 2000);
-        }
-    };
-
-    public String getMemoryInfo() {
-        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
-        activityManager.getMemoryInfo(memoryInfo);
-
-        long availableMemory = memoryInfo.availMem / (1024 * 1024);
-        long totalMemory = memoryInfo.totalMem / (1024 * 1024);
-
-        return String.format("Available Memory: %d MB / Total Memory: %d MB", availableMemory, totalMemory);
-    }
-
-    public String getCpuUsage() {
-        try {
-            Process process = Runtime.getRuntime().exec("top -n 1");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.toLowerCase().contains("cpu")) {
-                    return parseCpuLine(line);
-                }
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "CPU Stats unavailable";
-    }
-
-    private String parseCpuLine(String line) {
-        line = line.toLowerCase().replace("cpu:", "").trim();
-        String[] parts = line.split("\\+");
-
-        float totalUsage = 0;
-        for (String part : parts) {
-            part = part.trim();
-            if (part.contains("idle")) continue;
-
+        // Example: dummy internet access to trigger data
+        new Thread(() -> {
             try {
-                String[] tokens = part.trim().split("%");
-                float value = Float.parseFloat(tokens[0].trim());
-                totalUsage += value;
+                URL url = new URL("https://www.google.com");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.connect();
+                connection.getInputStream().close();
             } catch (Exception e) {
                 e.printStackTrace();
-                return "CPU Usage: Error";
+            }
+        }).start();
+
+    }
+
+    private void updateRotatingHeader() {
+        new Thread(() -> {
+            try {
+                String phoneName = Build.MODEL;
+                String processorName = getProcessorInfo(); // Get processor info dynamically
+                String osName = "Android " + Build.VERSION.RELEASE; // Use Android version for OS
+                String[] headers = {
+                        "Hi, " + phoneName,
+                        "Processor: " + processorName,
+                        "Operating System: " + osName
+                };
+                int index = 0;
+                while (true) {
+                    final int currentIndex = index;
+                    runOnUiThread(() -> rotatingHeader.setText(headers[currentIndex])); // Updated to use rotatingHeader
+                    index = (index + 1) % headers.length;
+                    Thread.sleep(10000);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private String getProcessorInfo() {
+        String processorInfo = "Unknown Processor";
+
+        // Try using Build.HARDWARE as a fallback
+        try {
+            String hardware = Build.HARDWARE;
+            if (hardware != null && !hardware.isEmpty()) {
+                processorInfo = hardware;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // If it's still unknown, fallback to reading /proc/cpuinfo
+        if (processorInfo.equals("Unknown Processor")) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader("/proc/cpuinfo"));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains("Hardware") || line.contains("Processor")) {
+                        processorInfo = line.split(":")[1].trim();
+                        break;
+                    }
+                }
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
-        return String.format("CPU Usage: %.2f%%", totalUsage);
+        return processorInfo;
     }
 
-    public String getStorageInfo() {
-        StatFs statFs = new StatFs(Environment.getDataDirectory().getAbsolutePath());
+    private void updateMemoryStats() {
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        activityManager.getMemoryInfo(memoryInfo);
 
-        long blockSize = statFs.getBlockSizeLong();
-        long totalBlocks = statFs.getBlockCountLong();
-        long availableBlocks = statFs.getAvailableBlocksLong();
+        // Convert bytes to MB
+        long totalMemory = memoryInfo.totalMem / (1024 * 1024); // MB
+        long availableMemory = memoryInfo.availMem / (1024 * 1024); // MB
 
-        long totalStorage = totalBlocks * blockSize / (1024 * 1024);
-        long availableStorage = availableBlocks * blockSize / (1024 * 1024);
+        // Update the UI dynamically
+        totalMemoryText.setText("Total: " + totalMemory + " MB");
+        availableMemoryText.setText("Available: " + availableMemory + " MB");
 
-        return String.format("Available Storage: %d MB / Total Storage: %d MB", availableStorage, totalStorage);
+        // Update progress bar for memory usage
+        int progress = (int) ((availableMemory / (float) totalMemory) * 100);
+        memoryProgressBar.setProgress(progress);
     }
 
-    private String getDeviceUptime() {
-        long uptimeMillis = SystemClock.elapsedRealtime();
-        long uptimeSeconds = uptimeMillis / 1000;
-        long hours = uptimeSeconds / 3600;
-        long minutes = (uptimeSeconds % 3600) / 60;
-        long seconds = uptimeSeconds % 60;
+    private void updateStorageStats() {
+        // Get storage stats
+        StatFs statFs = new StatFs(Environment.getExternalStorageDirectory().getAbsolutePath());
+        long totalStorage = statFs.getBlockSizeLong() * statFs.getBlockCountLong() / (1024 * 1024 * 1024); // GB
+        long availableStorage = statFs.getBlockSizeLong() * statFs.getAvailableBlocksLong() / (1024 * 1024 * 1024); // GB
 
-        return String.format("Uptime: %02d:%02d:%02d", hours, minutes, seconds);
+        // Update UI dynamically
+        totalStorageText.setText("Total: " + totalStorage + " GB");
+        availableStorageText.setText("Available: " + availableStorage + " GB");
+
+        // Update progress bar for storage usage
+        int progress = (int) ((availableStorage / (float) totalStorage) * 100);
+        storageProgressBar.setProgress(progress);
     }
 
-    private String getBatteryStatusString(int status) {
-        switch (status) {
-            case BatteryManager.BATTERY_STATUS_CHARGING:
-                return "Charging";
-            case BatteryManager.BATTERY_STATUS_DISCHARGING:
-                return "Discharging";
-            case BatteryManager.BATTERY_STATUS_FULL:
-                return "Full";
-            default:
-                return "Unknown";
+    private void updateBatteryStats() {
+        // Get battery stats
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = registerReceiver(null, ifilter);
+
+        // Get battery percentage
+        int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        int batteryPct = (int) ((level / (float) scale) * 100);
+        batteryPercentageText.setText(batteryPct + "%");
+        batteryProgressBar.setProgress(batteryPct);
+
+        // Set color for battery percentage
+        if (batteryPct < 15) {
+            batteryProgressBar.setProgressDrawable(getResources().getDrawable(R.drawable.progress_circular_red));
+        } else {
+            batteryProgressBar.setProgressDrawable(getResources().getDrawable(R.drawable.progress_circular));
         }
+
+        // Battery Health
+        int health = batteryStatus.getIntExtra(BatteryManager.EXTRA_HEALTH, BatteryManager.BATTERY_HEALTH_UNKNOWN);
+        String healthStatus = getHealthStatus(health);
+        batteryHealthText.setText("Health: " + healthStatus);
+
+        // Battery Capacity and Temperature
+        batteryCapacityText.setText("Capacity: " + getBatteryCapacity() + " mAh");
+        batteryTemperatureText.setText("Temperature: " + getBatteryTemperature() + "°C");
     }
 
-    private String getBatteryHealthString(int health) {
+    private String getHealthStatus(int health) {
         switch (health) {
             case BatteryManager.BATTERY_HEALTH_GOOD:
                 return "Good";
             case BatteryManager.BATTERY_HEALTH_OVERHEAT:
-                return "Overheat";
+                return "Overheating";
             case BatteryManager.BATTERY_HEALTH_DEAD:
                 return "Dead";
             case BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE:
                 return "Over Voltage";
-            case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE:
-                return "Failure";
             default:
                 return "Unknown";
         }
     }
 
-    private String getBatteryPowerSourceString(int plugged) {
-        switch (plugged) {
-            case BatteryManager.BATTERY_PLUGGED_USB:
-                return "USB";
-            case BatteryManager.BATTERY_PLUGGED_AC:
-                return "AC";
-            case BatteryManager.BATTERY_PLUGGED_WIRELESS:
-                return "Wireless";
-            default:
-                return "Battery";
-        }
+    private int getBatteryTemperature() {
+        // Get battery temperature in tenths of a degree Celsius
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = registerReceiver(null, ifilter);
+        int temperature = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0);
+        return temperature / 10; // Convert from tenths of degree Celsius to degrees Celsius
     }
 
-    private boolean isUsagePermissionGranted() {
-        try {
-            UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-            long currentTime = System.currentTimeMillis();
-            List<UsageStats> stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,
-                    currentTime - 1000 * 1000, currentTime);
-            return stats != null && !stats.isEmpty();
-        } catch (Exception e) {
-            return false;
-        }
+    private int getBatteryCapacity() {
+        // For now, simulate the battery capacity. You can later fetch this from system APIs if available.
+        return 5000; // Example: 5000 mAh
     }
 
-    public String getTopUsedApps() {
-        UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        long endTime = System.currentTimeMillis();
-        long beginTime = endTime - 1000 * 60 * 60 * 24; // last 24 hours
+    private void startNetworkSpeedMonitoring() {
+        previousRxBytes = TrafficStats.getTotalRxBytes();
+        previousTxBytes = TrafficStats.getTotalTxBytes();
 
-        List<UsageStats> usageStatsList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTime);
+        networkHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                long currentRxBytes = TrafficStats.getTotalRxBytes();
+                long currentTxBytes = TrafficStats.getTotalTxBytes();
 
-        if (usageStatsList == null || usageStatsList.isEmpty()) return "No usage data";
+                long downloadSpeed = currentRxBytes - previousRxBytes; // in bytes
+                long uploadSpeed = currentTxBytes - previousTxBytes;   // in bytes
 
-        Collections.sort(usageStatsList, (a, b) -> Long.compare(b.getTotalTimeInForeground(), a.getTotalTimeInForeground()));
+                previousRxBytes = currentRxBytes;
+                previousTxBytes = currentTxBytes;
 
-        StringBuilder usageInfo = new StringBuilder("Top Apps:\n");
-        for (int i = 0; i < Math.min(5, usageStatsList.size()); i++) {
-            UsageStats stats = usageStatsList.get(i);
-            String appName = getAppName(stats.getPackageName());  // Get app name from package name
-            usageInfo.append(appName)
-                    .append(" - ")
-                    .append(stats.getTotalTimeInForeground() / 1000).append("s\n");
-        }
+                downloadSpeedText.setText("Download: " + formatSpeed(downloadSpeed));
+                uploadSpeedText.setText("Upload: " + formatSpeed(uploadSpeed));
 
-        return usageInfo.toString();
-    }
-
-    private String getAppName(String packageName) {
-        PackageManager packageManager = getPackageManager();
-        try {
-            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(packageName, 0);
-            // Check if the app is a system app
-            if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
-                return packageName;  // Return the package name for system apps
+                networkHandler.postDelayed(this, 1000); // repeat every 1 second
             }
-            return packageManager.getApplicationLabel(applicationInfo).toString();
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            return packageName;  // Return package name if app name is not found
-        }
+        }, 1000);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission granted!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Permission denied!", Toast.LENGTH_SHORT).show();
-            }
-        }
+    private String formatSpeed(long bytesPerSec) {
+        double kbps = bytesPerSec / 1024.0;
+        if (kbps < 1024)
+            return String.format("%.1f KB/s", kbps);
+        else
+            return String.format("%.2f MB/s", kbps / 1024);
     }
 }

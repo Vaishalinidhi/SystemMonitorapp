@@ -1,109 +1,354 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#000000"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:gravity="center_horizontal">
+        android:padding="8dp">
 
-        <!-- Memory Info -->
+        <!-- Rotating Header -->
         <TextView
-            android:id="@+id/memoryText"
-            android:layout_width="match_parent"
+            android:id="@+id/rotating_header"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Memory Info"
+            android:text="Hi, ..."
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_background" />
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="8dp" />
 
-        <!-- CPU Info -->
-        <TextView
-            android:id="@+id/cpuText"
+        <!-- GridLayout for arranging cards -->
+        <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="CPU Info"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_background" />
+            android:columnCount="2"
+            android:rowCount="2"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center">
 
-        <!-- Storage Info -->
-        <TextView
-            android:id="@+id/storageText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Storage Info"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_background" />
+            <!-- Memory Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_rowSpan="2"
+                android:layout_columnSpan="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:background="#D3D3D3">
 
-        <!-- Battery Info -->
-        <TextView
-            android:id="@+id/batteryText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Battery Info"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_background" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-        <!-- Lifecycle Info -->
-        <TextView
-            android:id="@+id/lifecycleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Lifecycle Status"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_background" />
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
 
-        <!-- Uptime Info -->
-        <TextView
-            android:id="@+id/uptimeText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Uptime Info"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_background" />
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/img_3" />
 
-        <!-- App Usage Stats -->
-        <TextView
-            android:id="@+id/usageStatsText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="App Usage Stats"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:padding="16dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_background" />
+                        <TextView
+                            android:id="@+id/title_memory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Memory"
+                            android:textColor="#000000"
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:paddingStart="8dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
 
-        <TextView
-            android:id="@+id/usageText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="App Usage Info"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:padding="8dp" />
+                    <TextView
+                        android:id="@+id/text_total_memory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total: 0 GB"
+                        android:textColor="#000000"
+                        android:paddingTop="8dp"/>
 
+                    <TextView
+                        android:id="@+id/text_available_memory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Available: 0 GB"
+                        android:textColor="#000000"/>
 
+                    <ProgressBar
+                        android:id="@+id/progress_memory"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:progressDrawable="@drawable/progress_dotted"
+                        android:layout_marginTop="8dp"
+                        android:max="100"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Battery Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_rowSpan="2"
+                android:layout_columnSpan="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:background="#FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center_horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/img_2" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Battery"
+                            android:textColor="#000000"
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:paddingStart="8dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:layout_marginTop="12dp">
+
+                        <ProgressBar
+                            android:id="@+id/battery_progress"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:max="100"
+                            android:progress="50"
+                            android:progressDrawable="@drawable/progress_circular"
+                            android:rotation="-90"/>
+
+                        <TextView
+                            android:id="@+id/battery_percentage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="50%"
+                            android:textColor="#000000"
+                            android:textSize="18sp"
+                            android:textStyle="bold"/>
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/battery_health"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Health: Good"
+                        android:textColor="#000000"
+                        android:layout_marginTop="8dp"/>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/img_1"/>
+
+                        <TextView
+                            android:id="@+id/battery_capacity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="5000 mAh"
+                            android:textColor="#000000"
+                            android:paddingStart="4dp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/img"/>
+
+                        <TextView
+                            android:id="@+id/battery_temperature"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="30°C"
+                            android:textColor="#000000"
+                            android:paddingStart="4dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Storage Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnSpan="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:background="#F5F5F5">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/img_4" />
+
+                        <TextView
+                            android:id="@+id/title_storage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Storage"
+                            android:textColor="#000000"
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:paddingStart="8dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/text_total_storage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total: 0 GB"
+                        android:textColor="#000000"
+                        android:paddingTop="8dp"/>
+
+                    <TextView
+                        android:id="@+id/text_available_storage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Available: 0 GB"
+                        android:textColor="#000000"/>
+
+                    <ProgressBar
+                        android:id="@+id/progress_storage"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:progressDrawable="@drawable/progress_dotted"
+                        android:layout_marginTop="8dp"
+                        android:max="100"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Network Info Card (Placed Below Storage Card) -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnSpan="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:background="#E8EAF6">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center_horizontal">
+
+                    <!-- Network Heading with Icon -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/img_7"
+                            android:contentDescription="Network Icon" />
+
+                        <TextView
+                            android:id="@+id/title_network"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Speed Test"
+                            android:textColor="#000000"
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:paddingStart="8dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+
+                    <!-- Download Speed Line -->
+                    <TextView
+                        android:id="@+id/text_download_speed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Download Speed: 0 Mbps"
+                        android:textColor="#000000"
+                        android:layout_marginTop="8dp"/>
+
+                    <!-- Upload Speed Line -->
+                    <TextView
+                        android:id="@+id/text_upload_speed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Upload Speed: 0 Mbps"
+                        android:textColor="#000000"
+                        android:layout_marginTop="4dp"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </GridLayout>
     </LinearLayout>
 </ScrollView>
