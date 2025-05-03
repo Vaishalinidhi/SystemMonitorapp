@@ -48,6 +48,13 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar cpuProgress;
     private TextView cpuPercentage;
 
+    private TextView deviceUptime;
+
+    private Handler uptimeHandler;
+    private Runnable uptimeRunnable;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
         cpuProgress = findViewById(R.id.cpu_progress);
         cpuPercentage = findViewById(R.id.cpu_percentage);
         cpuUsageText = findViewById(R.id.cpu_usage_text);
+        deviceUptime = findViewById(R.id.device_uptime);
+
+
+
 
 // Add your CPU usage TextView
 
@@ -81,7 +92,10 @@ public class MainActivity extends AppCompatActivity {
         updateStorageStats();
         updateBatteryStats();
         startNetworkSpeedMonitoring();
-        startCpuMonitoring(); // Start CPU monitoring
+        startCpuMonitoring();
+        updateDeviceUptime();
+        startUptimeMonitoring();
+
 
         // Update memory and storage stats every 2 seconds
         new Handler().postDelayed(new Runnable() {
@@ -106,6 +120,19 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
     }
+
+    private void startUptimeMonitoring() {
+        uptimeHandler = new Handler();
+        uptimeRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateDeviceUptime();
+                uptimeHandler.postDelayed(this, 2000); // every 2 seconds
+            }
+        };
+        uptimeHandler.post(uptimeRunnable);
+    }
+
 
     private void updateRotatingHeader() {
         new Thread(() -> {
@@ -393,13 +420,37 @@ public class MainActivity extends AppCompatActivity {
         return frequency;
     }
 
+
+
+    private void updateDeviceUptime() {
+        long uptimeMillis = SystemClock.elapsedRealtime();
+        long seconds = uptimeMillis / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+
+        seconds = seconds % 60;
+        minutes = minutes % 60;
+
+        String formatted = String.format("Device Uptime: %02d:%02d:%02d", hours, minutes, seconds);
+        deviceUptime.setText(formatted);
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // Clean up CPU handler and runnable
         if (cpuHandler != null && cpuRunnable != null) {
             cpuHandler.removeCallbacks(cpuRunnable);
         }
+
+        // Clean up uptime handler and runnable
+        if (uptimeHandler != null && uptimeRunnable != null) {
+            uptimeHandler.removeCallbacks(uptimeRunnable);
+        }
     }
+
+
+
 
 
 }
