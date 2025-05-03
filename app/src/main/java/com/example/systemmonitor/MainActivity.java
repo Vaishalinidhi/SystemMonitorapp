@@ -16,7 +16,6 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.StatFs;
 import android.os.Environment;
-
 import androidx.appcompat.app.AppCompatActivity;
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,16 +40,14 @@ public class MainActivity extends AppCompatActivity {
     private long previousTxBytes = 0;
     private Handler networkHandler = new Handler();
 
-    private String[] rotatingMessages = {"Hi, %s", "Processor: %s", "Operating System: %s"};
+
     private Handler cpuHandler;
     private Runnable cpuRunnable;
     private DecimalFormat decimalFormat = new DecimalFormat("#0.0");
 
-    private long lastTotalCpuTime = 0;
-    private long lastIdleCpuTime = 0;
+    private ProgressBar cpuProgress;
+    private TextView cpuPercentage;
 
-    private long prevIdleTime = 0;
-    private long prevTotalTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +69,11 @@ public class MainActivity extends AppCompatActivity {
         batteryTemperatureText = findViewById(R.id.battery_temperature);
         uploadSpeedText = findViewById(R.id.text_upload_speed);
         downloadSpeedText = findViewById(R.id.text_download_speed);
-        cpuUsageText = findViewById(R.id.text_cpu_usage); // Add your CPU usage TextView
+        cpuProgress = findViewById(R.id.cpu_progress);
+        cpuPercentage = findViewById(R.id.cpu_percentage);
+        cpuUsageText = findViewById(R.id.cpu_usage_text);
+
+// Add your CPU usage TextView
 
         // Start updating stats in real-time
         updateRotatingHeader();
@@ -293,14 +294,37 @@ public class MainActivity extends AppCompatActivity {
         cpuRunnable = new Runnable() {
             @Override
             public void run() {
+                double cpuUsage = calculateCpuUsagePercent();
+                cpuProgress.setProgress((int) cpuUsage);
+                cpuPercentage.setText(decimalFormat.format(cpuUsage) + "%");
+
                 String usageInfo = getCpuUsageAndCoreFreq();
-                cpuUsageText.setText(usageInfo); // Display the information in your TextView
-                cpuHandler.postDelayed(this, 2000); // Update every 2 seconds
+                cpuUsageText.setText(usageInfo);
+
+                cpuHandler.postDelayed(this, 2000);
             }
         };
         cpuHandler.post(cpuRunnable);
     }
 
+    private double calculateCpuUsagePercent() {
+        int cores = Runtime.getRuntime().availableProcessors();
+        long totalCurrentFreq = 0;
+        long totalMaxFreq = 0;
+
+        for (int i = 0; i < cores; i++) {
+            long curFreq = getCpuFrequency(i);
+            long maxFreq = getMaxCpuFrequency(i);
+
+            totalCurrentFreq += curFreq;
+            totalMaxFreq += maxFreq;
+        }
+
+        if (totalMaxFreq > 0) {
+            return (double) totalCurrentFreq / totalMaxFreq * 100;
+        }
+        return 0;
+    }
 
     private String getCpuUsageAndCoreFreq() {
         int cores = Runtime.getRuntime().availableProcessors();
@@ -317,25 +341,38 @@ public class MainActivity extends AppCompatActivity {
             totalMaxFreq += maxFreq;
         }
 
-        // Avoid division by zero
         double cpuPercentage = 0;
         if (totalMaxFreq > 0) {
             cpuPercentage = (double) totalCurrentFreq / totalMaxFreq * 100;
         }
 
-        // First line: CPU usage
         result.append("CPU: ").append(decimalFormat.format(cpuPercentage)).append("%\n");
-
-        // Second line: Number of cores
         result.append("Cores: ").append(cores).append("\n");
 
-        // Next lines: Each core frequency (current only)
         for (int i = 0; i < cores; i++) {
             long curFreq = getCpuFrequency(i);
             result.append("Core ").append(i).append(": ").append(curFreq).append(" MHz\n");
         }
 
         return result.toString();
+    }
+
+    private long getCpuFrequency(int core) {
+        long frequency = 0;
+        try {
+            File file = new File("/sys/devices/system/cpu/cpu" + core + "/cpufreq/scaling_cur_freq");
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String line = reader.readLine();
+                reader.close();
+                if (line != null) {
+                    frequency = Long.parseLong(line.trim()) / 1000; // MHz
+                }
+            }
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+        return frequency;
     }
 
     private long getMaxCpuFrequency(int core) {
@@ -347,38 +384,10 @@ public class MainActivity extends AppCompatActivity {
                 String line = reader.readLine();
                 reader.close();
                 if (line != null) {
-                    frequency = Long.parseLong(line.trim()) / 1000; // Convert to MHz
+                    frequency = Long.parseLong(line.trim()) / 1000; // MHz
                 }
             }
         } catch (IOException | NumberFormatException e) {
-            e.printStackTrace();
-        }
-        return frequency;
-    }
-
-
-
-
-    private long getCpuFrequency(int core) {
-        long frequency = 0;
-        try {
-            File file = new File("/sys/devices/system/cpu/cpu" + core + "/cpufreq/scaling_cur_freq");
-            if (file.exists()) {
-                BufferedReader reader = new BufferedReader(new FileReader(file));
-                String line = reader.readLine();
-                reader.close();
-                if (line != null) {
-                    try {
-                        frequency = Long.parseLong(line.trim()) / 1000; // Convert to MHz
-                    } catch (NumberFormatException e) {
-                        // Handle the exception.  Maybe log it, maybe return 0,
-                        //  depending on your needs.  Here, we'll return 0.
-                        e.printStackTrace();
-                        return 0;
-                    }
-                }
-            }
-        } catch (IOException e) {
             e.printStackTrace();
         }
         return frequency;
@@ -388,7 +397,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (cpuHandler != null && cpuRunnable != null) {
-            cpuHandler.removeCallbacks(cpuRunnable); // Stop CPU monitoring when the activity is destroyed
+            cpuHandler.removeCallbacks(cpuRunnable);
         }
     }
 
