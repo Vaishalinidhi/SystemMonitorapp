@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.os.Build;
 import android.content.Context;
 import android.app.ActivityManager;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.ProgressBar;
 import android.content.Intent;
@@ -16,16 +19,22 @@ import android.os.Environment;
 
 import androidx.appcompat.app.AppCompatActivity;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.io.RandomAccessFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView rotatingHeader, totalMemoryText, availableMemoryText, totalStorageText, availableStorageText, batteryPercentageText, batteryHealthText, batteryCapacityText, batteryTemperatureText;
+    private TextView rotatingHeader, totalMemoryText, availableMemoryText, totalStorageText, availableStorageText, batteryPercentageText, batteryHealthText, batteryCapacityText, batteryTemperatureText, cpuUsageText;
     private ProgressBar memoryProgressBar, batteryProgressBar, storageProgressBar;
-    private int rotationCount = 0;
+
 
     private TextView uploadSpeedText, downloadSpeedText;
     private long previousRxBytes = 0;
@@ -33,6 +42,15 @@ public class MainActivity extends AppCompatActivity {
     private Handler networkHandler = new Handler();
 
     private String[] rotatingMessages = {"Hi, %s", "Processor: %s", "Operating System: %s"};
+    private Handler cpuHandler;
+    private Runnable cpuRunnable;
+    private DecimalFormat decimalFormat = new DecimalFormat("#0.0");
+
+    private long lastTotalCpuTime = 0;
+    private long lastIdleCpuTime = 0;
+
+    private long prevIdleTime = 0;
+    private long prevTotalTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         batteryTemperatureText = findViewById(R.id.battery_temperature);
         uploadSpeedText = findViewById(R.id.text_upload_speed);
         downloadSpeedText = findViewById(R.id.text_download_speed);
+        cpuUsageText = findViewById(R.id.text_cpu_usage); // Add your CPU usage TextView
 
         // Start updating stats in real-time
         updateRotatingHeader();
@@ -61,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         updateStorageStats();
         updateBatteryStats();
         startNetworkSpeedMonitoring();
+        startCpuMonitoring(); // Start CPU monitoring
 
         // Update memory and storage stats every 2 seconds
         new Handler().postDelayed(new Runnable() {
@@ -84,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }).start();
-
     }
 
     private void updateRotatingHeader() {
@@ -258,11 +277,120 @@ public class MainActivity extends AppCompatActivity {
         }, 1000);
     }
 
-    private String formatSpeed(long bytesPerSec) {
-        double kbps = bytesPerSec / 1024.0;
-        if (kbps < 1024)
-            return String.format("%.1f KB/s", kbps);
-        else
-            return String.format("%.2f MB/s", kbps / 1024);
+    private String formatSpeed(long bytes) {
+        double kb = bytes / 1024.0;
+        double mb = kb / 1024.0;
+
+        if (mb > 1) {
+            return String.format("%.2f MB/s", mb);
+        } else {
+            return String.format("%.2f KB/s", kb);
+        }
     }
+
+    private void startCpuMonitoring() {
+        cpuHandler = new Handler();
+        cpuRunnable = new Runnable() {
+            @Override
+            public void run() {
+                String usageInfo = getCpuUsageAndCoreFreq();
+                cpuUsageText.setText(usageInfo); // Display the information in your TextView
+                cpuHandler.postDelayed(this, 2000); // Update every 2 seconds
+            }
+        };
+        cpuHandler.post(cpuRunnable);
+    }
+
+
+    private String getCpuUsageAndCoreFreq() {
+        int cores = Runtime.getRuntime().availableProcessors();
+        StringBuilder result = new StringBuilder();
+
+        long totalCurrentFreq = 0;
+        long totalMaxFreq = 0;
+
+        for (int i = 0; i < cores; i++) {
+            long curFreq = getCpuFrequency(i);
+            long maxFreq = getMaxCpuFrequency(i);
+
+            totalCurrentFreq += curFreq;
+            totalMaxFreq += maxFreq;
+        }
+
+        // Avoid division by zero
+        double cpuPercentage = 0;
+        if (totalMaxFreq > 0) {
+            cpuPercentage = (double) totalCurrentFreq / totalMaxFreq * 100;
+        }
+
+        // First line: CPU usage
+        result.append("CPU: ").append(decimalFormat.format(cpuPercentage)).append("%\n");
+
+        // Second line: Number of cores
+        result.append("Cores: ").append(cores).append("\n");
+
+        // Next lines: Each core frequency (current only)
+        for (int i = 0; i < cores; i++) {
+            long curFreq = getCpuFrequency(i);
+            result.append("Core ").append(i).append(": ").append(curFreq).append(" MHz\n");
+        }
+
+        return result.toString();
+    }
+
+    private long getMaxCpuFrequency(int core) {
+        long frequency = 0;
+        try {
+            File file = new File("/sys/devices/system/cpu/cpu" + core + "/cpufreq/cpuinfo_max_freq");
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String line = reader.readLine();
+                reader.close();
+                if (line != null) {
+                    frequency = Long.parseLong(line.trim()) / 1000; // Convert to MHz
+                }
+            }
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+        return frequency;
+    }
+
+
+
+
+    private long getCpuFrequency(int core) {
+        long frequency = 0;
+        try {
+            File file = new File("/sys/devices/system/cpu/cpu" + core + "/cpufreq/scaling_cur_freq");
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String line = reader.readLine();
+                reader.close();
+                if (line != null) {
+                    try {
+                        frequency = Long.parseLong(line.trim()) / 1000; // Convert to MHz
+                    } catch (NumberFormatException e) {
+                        // Handle the exception.  Maybe log it, maybe return 0,
+                        //  depending on your needs.  Here, we'll return 0.
+                        e.printStackTrace();
+                        return 0;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return frequency;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (cpuHandler != null && cpuRunnable != null) {
+            cpuHandler.removeCallbacks(cpuRunnable); // Stop CPU monitoring when the activity is destroyed
+        }
+    }
+
+
 }

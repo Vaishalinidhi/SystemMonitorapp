@@ -3,4 +3,6 @@
     <string name="battery_icon">Battery</string>
     <string name="battery_capacity_icon">Capacity</string>
     <string name="battery_temperature_icon">Temperature</string>
+    <string name="cpu_icon">🧠</string>
+
 </resources>
