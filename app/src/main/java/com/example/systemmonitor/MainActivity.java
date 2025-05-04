@@ -523,7 +523,7 @@ public class MainActivity extends AppCompatActivity {
                 long totalTime = usageStats.getTotalTimeInForeground();
 
                 topAppsBuilder.append("• ").append(appName)
-                        .append(" - ").append(formatMilliseconds(totalTime)).append("\n\n");
+                        .append(" -\n ").append(formatMilliseconds(totalTime)).append("\n\n");
 
                 count++;
             }
@@ -618,9 +618,9 @@ public class MainActivity extends AppCompatActivity {
             long hours = minutes / 60;
 
             minutes = minutes % 60;
-            seconds = seconds % 60;
+           seconds =seconds %60;
 
-            return String.format("%02dh %02dm %02ds", hours, minutes, seconds);
+            return String.format("%02dh %02dm %02ds ", hours, minutes, seconds);
         }
     }
 

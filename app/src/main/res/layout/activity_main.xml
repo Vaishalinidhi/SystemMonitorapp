@@ -456,14 +456,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp"
-                android:gravity="center_horizontal">
+                android:padding="16dp">
 
+                <!-- Heading aligned to start (LHS) -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="start|center_vertical">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -481,43 +481,56 @@
                         android:fontFamily="sans-serif-medium"/>
                 </LinearLayout>
 
-                <FrameLayout
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
+
+                <!-- Centered horizontal layout for ring and info -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center_horizontal"
                     android:layout_marginTop="12dp">
 
-                    <ProgressBar
-                        android:id="@+id/cpu_progress"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:max="100"
-                        android:progress="50"
-                        android:progressDrawable="@drawable/progress_circular_yellow"
-                        android:rotation="-90"/>
 
+                <!-- Circular Ring -->
+                    <FrameLayout
+                        android:layout_width="120dp"
+                        android:layout_height="120dp">
+
+                        <ProgressBar
+                            android:id="@+id/cpu_progress"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:max="100"
+                            android:progress="50"
+                            android:progressDrawable="@drawable/progress_circular_yellow"
+                            android:rotation="-90"/>
+
+                        <TextView
+                            android:id="@+id/cpu_percentage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="50%"
+                            android:textColor="#000000"
+                            android:textSize="18sp"
+                            android:textStyle="bold"/>
+                    </FrameLayout>
+
+                    <!-- CPU Info Text beside the ring -->
                     <TextView
-                        android:id="@+id/cpu_percentage"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:text="50%"
+                        android:id="@+id/cpu_usage_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
                         android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="bold"/>
-                </FrameLayout>
-
-                <!-- New TextView to show detailed CPU usage info -->
-                <TextView
-                    android:id="@+id/cpu_usage_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="#000000"
-                    android:textSize="14sp"
-                    android:layout_marginTop="12dp"
-                    android:text="Loading CPU details..."
-                    android:gravity="center"/>
+                        android:textSize="14sp"
+                        android:text=""
+                        android:gravity="start"/>
+                </LinearLayout>
             </LinearLayout>
+
         </androidx.cardview.widget.CardView>
 
 
