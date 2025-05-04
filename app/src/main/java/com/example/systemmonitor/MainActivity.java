@@ -2,6 +2,7 @@ package com.example.systemmonitor;
 
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.TrafficStats;
@@ -478,21 +479,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void displayTopUsedApps() {
-            if (!hasUsageStatsPermission()) {
-                requestUsageStatsPermission();
-                appUsageTextView.setText("Permission not granted.");
-                return;
-            }
+                    if (!hasUsageStatsPermission()) {
+                        requestUsageStatsPermission();
+                        appUsageTextView.setText("Permission not granted.");
+                        return;
+                    }
 
-            UsageStatsManager usageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+                    SharedPreferences prefs = context.getSharedPreferences("AppUsagePrefs", Context.MODE_PRIVATE);
+                    long lastOpened = prefs.getLong("lastOpened", System.currentTimeMillis() - 3600000); // fallback: 1 hour ago
 
-            long endTime = System.currentTimeMillis();
-            long startTime = endTime - 1000 * 60 * 60 * 24; // Last 24 hours
+                    long endTime = System.currentTimeMillis();
+                    long startTime = lastOpened;
 
-            List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(
-                    UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
+                    UsageStatsManager usageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
 
-            if (usageStatsList == null || usageStatsList.isEmpty()) {
+                    List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(
+                            UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
+
+
+                    if (usageStatsList == null || usageStatsList.isEmpty()) {
                 appUsageTextView.setText("No usage data available.");
                 return;
             }
@@ -618,6 +623,14 @@ public class MainActivity extends AppCompatActivity {
             return String.format("%02dh %02dm %02ds", hours, minutes, seconds);
         }
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences prefs = getSharedPreferences("AppUsagePrefs", MODE_PRIVATE);
+        prefs.edit().putLong("lastOpened", System.currentTimeMillis()).apply();
+    }
+
 
 
 
