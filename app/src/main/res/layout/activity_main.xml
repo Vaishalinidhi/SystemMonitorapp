@@ -33,52 +33,6 @@
             android:layout_marginTop="16dp"
             android:layout_gravity="center">
 
-
-            <!-- App Usage Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnSpan="1"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="8dp"
-                android:background="#FFF8E1">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <!-- Header row: Icon + Title -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/img_11"
-                            android:contentDescription="App Usage Icon" />
-
-                        <TextView
-                            android:id="@+id/title_app_usage"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="App Usage"
-                            android:textColor="#000000"
-                            android:textStyle="bold"
-                            android:textSize="18sp"
-                            android:paddingStart="8dp"
-                            android:fontFamily="sans-serif-medium"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
             <!-- Battery Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
@@ -197,6 +151,52 @@
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+            <!-- App Usage Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnSpan="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:background="#FFF8E1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Header row: Icon + Title -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/img_11"
+                            android:contentDescription="App Usage Icon" />
+
+                        <TextView
+                            android:id="@+id/title_app_usage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="App Usage"
+                            android:textColor="#000000"
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:paddingStart="8dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+
             <!-- Memory Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
