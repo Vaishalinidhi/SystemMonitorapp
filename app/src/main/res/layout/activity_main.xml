@@ -441,92 +441,86 @@
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+        </GridLayout>
 
+        <!-- CPU Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            android:background="#FFF9C4">
 
-
-
-
-
-            <!-- CPU Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_columnSpan="1"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="8dp"
-                android:background="#FFF9C4">
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:gravity="center_horizontal">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center_horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                    <LinearLayout
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/img_9" />
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/img_9" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="CPU Usage"
-                            android:textColor="#000000"
-                            android:textStyle="bold"
-                            android:textSize="18sp"
-                            android:paddingStart="8dp"
-                            android:fontFamily="sans-serif-medium"/>
-                    </LinearLayout>
-
-                    <FrameLayout
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:layout_marginTop="12dp">
-
-                        <ProgressBar
-                            android:id="@+id/cpu_progress"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:max="100"
-                            android:progress="50"
-                            android:progressDrawable="@drawable/progress_circular_yellow"
-                            android:rotation="-90"/>
-
-                        <TextView
-                            android:id="@+id/cpu_percentage"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:text="50%"
-                            android:textColor="#000000"
-                            android:textSize="18sp"
-                            android:textStyle="bold"/>
-                    </FrameLayout>
-
-                    <!-- New TextView to show detailed CPU usage info -->
-                    <TextView
-                        android:id="@+id/cpu_usage_text"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:text="CPU Usage"
                         android:textColor="#000000"
-                        android:textSize="14sp"
-                        android:layout_marginTop="12dp"
-                        android:text="Loading CPU details..."
-                        android:gravity="center"/>
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:paddingStart="8dp"
+                        android:fontFamily="sans-serif-medium"/>
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+
+                <FrameLayout
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_marginTop="12dp">
+
+                    <ProgressBar
+                        android:id="@+id/cpu_progress"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:max="100"
+                        android:progress="50"
+                        android:progressDrawable="@drawable/progress_circular_yellow"
+                        android:rotation="-90"/>
+
+                    <TextView
+                        android:id="@+id/cpu_percentage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="50%"
+                        android:textColor="#000000"
+                        android:textSize="18sp"
+                        android:textStyle="bold"/>
+                </FrameLayout>
+
+                <!-- New TextView to show detailed CPU usage info -->
+                <TextView
+                    android:id="@+id/cpu_usage_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:layout_marginTop="12dp"
+                    android:text="Loading CPU details..."
+                    android:gravity="center"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
 
-        </GridLayout>
+
     </LinearLayout>
 </ScrollView>
