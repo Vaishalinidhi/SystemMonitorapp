@@ -33,17 +33,17 @@
             android:layout_marginTop="16dp"
             android:layout_gravity="center">
 
-            <!-- Memory Card -->
+
+            <!-- App Usage Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_rowSpan="2"
                 android:layout_columnSpan="1"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="8dp"
-                android:background="#D3D3D3">
+                android:background="#FFF8E1">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -51,22 +51,24 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Header row: Icon + Title -->
                     <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
                         android:gravity="center_vertical">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/img_3" />
+                            android:src="@drawable/img_11"
+                            android:contentDescription="App Usage Icon" />
 
                         <TextView
-                            android:id="@+id/title_memory"
+                            android:id="@+id/title_app_usage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Memory"
+                            android:text="App Usage"
                             android:textColor="#000000"
                             android:textStyle="bold"
                             android:textSize="18sp"
@@ -74,29 +76,6 @@
                             android:fontFamily="sans-serif-medium"/>
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/text_total_memory"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Total: 0 GB"
-                        android:textColor="#000000"
-                        android:paddingTop="8dp"/>
-
-                    <TextView
-                        android:id="@+id/text_available_memory"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Available: 0 GB"
-                        android:textColor="#000000"/>
-
-                    <ProgressBar
-                        android:id="@+id/progress_memory"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="8dp"
-                        android:progressDrawable="@drawable/progress_dotted"
-                        android:layout_marginTop="8dp"
-                        android:max="100"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -218,7 +197,135 @@
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+            <!-- Memory Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_rowSpan="2"
+                android:layout_columnSpan="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:background="#D3D3D3">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/img_3" />
+
+                        <TextView
+                            android:id="@+id/title_memory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Memory"
+                            android:textColor="#000000"
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:paddingStart="8dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/text_total_memory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total: 0 GB"
+                        android:textColor="#000000"
+                        android:paddingTop="8dp"/>
+
+                    <TextView
+                        android:id="@+id/text_available_memory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Available: 0 GB"
+                        android:textColor="#000000"/>
+
+                    <ProgressBar
+                        android:id="@+id/progress_memory"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:progressDrawable="@drawable/progress_dotted"
+                        android:layout_marginTop="8dp"
+                        android:max="100"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+            <!-- Network Info Card (Placed Below Storage Card) -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnSpan="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:background="#E8EAF6">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center_horizontal">
+
+                    <!-- Network Heading with Icon -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/img_7"
+                            android:contentDescription="Network Icon" />
+
+                        <TextView
+                            android:id="@+id/title_network"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Speed Test"
+                            android:textColor="#000000"
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:paddingStart="8dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+
+                    <!-- Download Speed Line -->
+                    <TextView
+                        android:id="@+id/text_download_speed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Download Speed: 0 Mbps"
+                        android:textColor="#000000"
+                        android:layout_marginTop="8dp"/>
+
+                    <!-- Upload Speed Line -->
+                    <TextView
+                        android:id="@+id/text_upload_speed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Upload Speed: 0 Mbps"
+                        android:textColor="#000000"
+                        android:layout_marginTop="4dp"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
             <!-- Storage Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
@@ -285,25 +392,22 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Network Info Card (Placed Below Storage Card) -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_columnSpan="1"
-                android:layout_columnWeight="1"
                 android:layout_margin="8dp"
+                android:layout_columnWeight="1"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="8dp"
-                android:background="#E8EAF6">
+                android:background="#E1F5FE">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center_horizontal">
+                    android:padding="16dp">
 
-                    <!-- Network Heading with Icon -->
+                    <!-- Device Info Title with Icon -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -313,41 +417,35 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/img_7"
-                            android:contentDescription="Network Icon" />
+                            android:src="@drawable/img_10"/>
 
                         <TextView
-                            android:id="@+id/title_network"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Speed Test"
+                            android:text="Device Info:"
                             android:textColor="#000000"
-                            android:textStyle="bold"
                             android:textSize="18sp"
-                            android:paddingStart="8dp"
-                            android:fontFamily="sans-serif-medium"/>
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-medium"
+                            android:paddingStart="8dp" />
                     </LinearLayout>
 
-                    <!-- Download Speed Line -->
+                    <!-- Device Uptime Text -->
                     <TextView
-                        android:id="@+id/text_download_speed"
+                        android:id="@+id/device_uptime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Download Speed: 0 Mbps"
+                        android:text="Device Uptime: --:--"
                         android:textColor="#000000"
-                        android:layout_marginTop="8dp"/>
-
-                    <!-- Upload Speed Line -->
-                    <TextView
-                        android:id="@+id/text_upload_speed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Upload Speed: 0 Mbps"
-                        android:textColor="#000000"
-                        android:layout_marginTop="4dp"/>
-
+                        android:textSize="16sp"
+                        android:layout_marginTop="8dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+
+
+
+
 
             <!-- CPU Card -->
             <androidx.cardview.widget.CardView
@@ -428,55 +526,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:layout_columnWeight="1"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="8dp"
-                android:background="#E1F5FE">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <!-- Device Info Title with Icon -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/img_10"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Device Info:"
-                            android:textColor="#000000"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:fontFamily="sans-serif-medium"
-                            android:paddingStart="8dp" />
-                    </LinearLayout>
-
-                    <!-- Device Uptime Text -->
-                    <TextView
-                        android:id="@+id/device_uptime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Device Uptime: --:--"
-                        android:textColor="#000000"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
 
         </GridLayout>
     </LinearLayout>

@@ -1,5 +1,9 @@
 package com.example.systemmonitor;
 
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.TrafficStats;
 import android.os.Handler;
 import android.os.Bundle;
@@ -8,6 +12,7 @@ import android.content.Context;
 import android.app.ActivityManager;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.ProgressBar;
@@ -26,6 +31,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +62,12 @@ public class MainActivity extends AppCompatActivity {
 
     private Handler uptimeHandler;
     private Runnable uptimeRunnable;
+
+    private AppUsageHelper appUsageHelper;
+    private Handler handler = new Handler();
+    private Runnable usageUpdater;
+
+
 
 
 
@@ -80,8 +96,8 @@ public class MainActivity extends AppCompatActivity {
         cpuPercentage = findViewById(R.id.cpu_percentage);
         cpuUsageText = findViewById(R.id.cpu_usage_text);
         deviceUptime = findViewById(R.id.device_uptime);
-
-
+        TextView appUsageTextView = findViewById(R.id.title_app_usage);  // This TextView must exist in your layout
+        AppUsageHelper appUsageHelper = new AppUsageHelper(this, appUsageTextView);
 
 
 // Add your CPU usage TextView
@@ -95,6 +111,8 @@ public class MainActivity extends AppCompatActivity {
         startCpuMonitoring();
         updateDeviceUptime();
         startUptimeMonitoring();
+        appUsageHelper.displayTopUsedApps();
+
 
 
         // Update memory and storage stats every 2 seconds
@@ -449,7 +467,157 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public class AppUsageHelper {
 
+        private Context context;
+        private TextView appUsageTextView;
+
+        public AppUsageHelper(Context context, TextView appUsageTextView) {
+            this.context = context;
+            this.appUsageTextView = appUsageTextView;
+        }
+
+        public void displayTopUsedApps() {
+            if (!hasUsageStatsPermission()) {
+                requestUsageStatsPermission();
+                appUsageTextView.setText("Permission not granted.");
+                return;
+            }
+
+            UsageStatsManager usageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+
+            long endTime = System.currentTimeMillis();
+            long startTime = endTime - 1000 * 60 * 60 * 24; // Last 24 hours
+
+            List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(
+                    UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
+
+            if (usageStatsList == null || usageStatsList.isEmpty()) {
+                appUsageTextView.setText("No usage data available.");
+                return;
+            }
+
+            // Filter out apps with 0 usage and sort
+            List<UsageStats> filteredStats = new ArrayList<>();
+            for (UsageStats usage : usageStatsList) {
+                if (usage.getTotalTimeInForeground() > 0) {
+                    filteredStats.add(usage);
+                }
+            }
+
+            Collections.sort(filteredStats, (u1, u2) -> Long.compare(u2.getTotalTimeInForeground(), u1.getTotalTimeInForeground()));
+
+            StringBuilder topAppsBuilder = new StringBuilder();
+            topAppsBuilder.append("Top 2 Apps \n (Last 24hr):\n\n");
+
+            int count = 0;
+            for (UsageStats usageStats : filteredStats) {
+                if (count >= 2) break;
+                String packageName = usageStats.getPackageName();
+                String appName = getAppNameFromPackage(packageName);
+                long totalTime = usageStats.getTotalTimeInForeground();
+
+                topAppsBuilder.append("• ").append(appName)
+                        .append(" - ").append(formatMilliseconds(totalTime)).append("\n\n");
+
+                count++;
+            }
+
+            if (count == 0) {
+                appUsageTextView.setText("No app usage detected in last 24 hours.");
+            } else {
+                appUsageTextView.setText(topAppsBuilder.toString());
+            }
+        }
+
+        private boolean hasUsageStatsPermission() {
+            try {
+                UsageStatsManager usageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+                long currentTime = System.currentTimeMillis();
+                List<UsageStats> stats = usageStatsManager.queryUsageStats(
+                        UsageStatsManager.INTERVAL_DAILY, currentTime - 1000 * 1000, currentTime);
+                return stats != null && !stats.isEmpty();
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        private void requestUsageStatsPermission() {
+            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            context.startActivity(intent);
+        }
+
+        private String getAppNameFromPackage(String packageName) {
+            try {
+                PackageManager pm = context.getPackageManager();
+                ApplicationInfo appInfo = pm.getApplicationInfo(packageName, 0);
+                CharSequence label = pm.getApplicationLabel(appInfo);
+                return label != null ? label.toString() : packageName;
+            } catch (PackageManager.NameNotFoundException e) {
+                // Fallback: manually map known packages
+                switch (packageName) {
+                    case "com.instagram.android":
+                        return "Instagram";
+                    case "com.whatsapp":
+                        return "WhatsApp";
+                    case "com.facebook.katana":
+                        return "Facebook";
+                    case "com.google.android.youtube":
+                    case "com.youtube":
+                        return "YouTube";
+                    case "com.snapchat.android":
+                        return "Snapchat";
+                    case "com.twitter.android":
+                        return "Twitter";
+                    case "com.spotify.music":
+                        return "Spotify";
+                    case "com.netflix.mediaclient":
+                        return "Netflix";
+                    case "com.amazon.mShop.android.shopping":
+                        return "Amazon";
+                    case "com.google.android.gm":
+                        return "Gmail";
+                    case "com.google.android.apps.messaging":
+                        return "Messages";
+                    case "com.android.chrome":
+                        return "Chrome";
+                    case "org.mozilla.firefox":
+                        return "Firefox";
+                    case "com.microsoft.teams":
+                        return "Microsoft Teams";
+                    case "com.google.android.apps.photos":
+                        return "Google Photos";
+                    case "com.google.android.apps.docs":
+                        return "Google Docs";
+                    case "com.truecaller":
+                        return "Truecaller";
+                    case "com.phonepe.app":
+                        return "PhonePe";
+                    case "in.amazon.mShop.android.shopping":
+                        return "Amazon India";
+                    case "com.paytm.pgsdk":
+                    case "net.one97.paytm":
+                        return "Paytm";
+                    default:
+                        return packageName;
+                }
+
+            }
+        }
+
+
+
+        private String formatMilliseconds(long milliseconds) {
+            long seconds = milliseconds / 1000;
+            long minutes = seconds / 60;
+            long hours = minutes / 60;
+
+            minutes = minutes % 60;
+            seconds = seconds % 60;
+
+            return String.format("%02dh %02dm %02ds", hours, minutes, seconds);
+        }
+    }
 
 
 
